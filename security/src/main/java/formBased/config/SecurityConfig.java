@@ -27,6 +27,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
            .authorizeRequests()
                 .antMatchers("/login/**").permitAll()
+                .antMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
            .and()
            .formLogin()
@@ -39,8 +40,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                .deleteCookies("JSESSIONID")
                .invalidateHttpSession(true)
-               .logoutSuccessHandler(logoutSuccessHandler);
+               .logoutSuccessHandler(logoutSuccessHandler)
                //.logoutSuccessUrl("/login?logout=true")
+           .and()
+           .exceptionHandling()
+                .accessDeniedPage("/access-denied");
     }
 
 
