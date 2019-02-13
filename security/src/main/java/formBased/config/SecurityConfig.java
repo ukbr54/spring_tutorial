@@ -12,23 +12,25 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        auth
-           .inMemoryAuthentication()
-                .withUser("user").password(passwordEncoder.encode("user")).roles("USER")
-                .and()
-                .withUser("admin").password(passwordEncoder.encode("admin")).roles("ADMIN");
-    }
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-           .authorizeRequests()
-           .anyRequest()
-           .authenticated()
+           .authorizeRequests().anyRequest().authenticated()
            .and()
-           .httpBasic();
+           .formLogin()
+                .defaultSuccessUrl("/");
+    }
+
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        auth
+                .inMemoryAuthentication()
+                .withUser("user").password(passwordEncoder.encode("user")).roles("USER")
+                .and()
+                .withUser("admin").password(passwordEncoder.encode("admin")).roles("ADMIN");
     }
 }
