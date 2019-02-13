@@ -1,5 +1,7 @@
 package formBased.config;
 
+import formBased.component.CustomLogoutSuccessHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -7,12 +9,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final CustomLogoutSuccessHandler logoutSuccessHandler;
 
+    @Autowired
+    public SecurityConfig(CustomLogoutSuccessHandler logoutSuccessHandler) {
+        this.logoutSuccessHandler = logoutSuccessHandler;
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -25,7 +33,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .loginProcessingUrl("/perform_login")
                 .defaultSuccessUrl("/")
-                .failureUrl("/login?error=true");
+                .failureUrl("/login?error=true")
+           .and()
+           .logout()
+               .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+               .deleteCookies("JSESSIONID")
+               .invalidateHttpSession(true)
+               .logoutSuccessHandler(logoutSuccessHandler);
+               //.logoutSuccessUrl("/login?logout=true")
     }
 
 
