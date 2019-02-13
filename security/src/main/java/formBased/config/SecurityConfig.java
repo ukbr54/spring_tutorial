@@ -17,10 +17,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-           .authorizeRequests().anyRequest().authenticated()
+           .authorizeRequests()
+                .antMatchers("/login/**").permitAll()
+                .anyRequest().authenticated()
            .and()
            .formLogin()
-                .defaultSuccessUrl("/");
+                .loginPage("/login")
+                .loginProcessingUrl("/perform_login")
+                .defaultSuccessUrl("/")
+                .failureUrl("/login?error=true");
     }
 
 

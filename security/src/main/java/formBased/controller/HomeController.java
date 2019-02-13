@@ -9,6 +9,12 @@ import java.time.LocalDate;
 @Controller
 public class HomeController {
 
+    @GetMapping("/login")
+    public String login(){
+        return "login";
+    }
+
+
     @GetMapping("/")
     public String hello(Model model){
         model.addAttribute("message","Welcome to Spring Security Form Based Example!");
