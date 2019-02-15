@@ -38,6 +38,11 @@ public class HomeController {
         return "home";
     }
 
+    @GetMapping("/company")
+    public String company(){
+        return "company";
+    }
+
     @GetMapping("/admin")
     public String adminHomePage(Model model){
         model.addAttribute("message","From Admin page!");

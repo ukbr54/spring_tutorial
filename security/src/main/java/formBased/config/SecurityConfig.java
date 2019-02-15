@@ -1,6 +1,7 @@
 package formBased.config;
 
 import formBased.component.CustomAccessDeniedHandler;
+import formBased.component.CustomLoginSuccessHandler;
 import formBased.component.CustomLogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -18,12 +19,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CustomLogoutSuccessHandler logoutSuccessHandler;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final CustomLoginSuccessHandler loginSuccessHandler;
 
     @Autowired
     public SecurityConfig(CustomLogoutSuccessHandler logoutSuccessHandler,
-                          CustomAccessDeniedHandler accessDeniedHandler) {
+                          CustomAccessDeniedHandler accessDeniedHandler,
+                          CustomLoginSuccessHandler loginSuccessHandler) {
         this.logoutSuccessHandler = logoutSuccessHandler;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.loginSuccessHandler = loginSuccessHandler;
     }
 
     @Override
@@ -38,7 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
            .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/perform_login")
-                .defaultSuccessUrl("/home")
+                .successHandler(loginSuccessHandler)
+                //.defaultSuccessUrl("/home")
                 .failureUrl("/login?error=true")
            .and()
            .logout()
