@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
+import javax.validation.ConstraintViolation;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Data
 public class ApiError {
@@ -24,7 +25,7 @@ public class ApiError {
 
     private String debugMessage;
 
-    private List<ApiSubError> subErrors;
+    private List<ApiSubError> subErrors = new ArrayList<>();
 
     private ApiError() {
         timestamp = LocalDateTime.now();
@@ -53,16 +54,14 @@ public class ApiError {
      * Handling Field Error
      * @param fieldErrors
      */
-    void addValidationErrors(List<FieldError> fieldErrors){
-       fieldErrors.forEach(this::addValidationError);
-    }
+    void addValidationErrors(List<FieldError> fieldErrors){ fieldErrors.forEach(this::addValidationError); }
 
     private void addValidationError(FieldError fieldError){
         this.addValidationError(
-                fieldError.getObjectName(),
-                fieldError.getField(),
-                fieldError.getRejectedValue(),
-                fieldError.getDefaultMessage()
+                Objects.nonNull(fieldError.getObjectName()) ? fieldError.getObjectName() : null,
+                Objects.nonNull(fieldError.getField()) ? fieldError.getField() : null,
+                Objects.nonNull(fieldError.getRejectedValue()) ? fieldError.getRejectedValue() : null,
+                Objects.nonNull(fieldError.getDefaultMessage()) ? fieldError.getDefaultMessage() : null
         );
     }
 
@@ -76,8 +75,9 @@ public class ApiError {
 
     private void addValidationError(ObjectError objectError) {
         this.addValidationError(
-                objectError.getObjectName(),
-                objectError.getDefaultMessage());
+                Objects.nonNull(objectError.getObjectName()) ? objectError.getObjectName() : null,
+                Objects.nonNull(objectError.getDefaultMessage()) ? objectError.getDefaultMessage() : null
+        );
     }
 
     private void addValidationError(String object,String field,Object rejectedValue,String message){
@@ -90,9 +90,26 @@ public class ApiError {
 
     private void addSubError(ApiSubError subError){
         if(subError == null) {
-            this.subErrors = new ArrayList<>();
+            this.subErrors = Collections.emptyList();
         }
         subErrors.add(subError);
+    }
+
+    /**
+     * Utility method for adding error of ConstraintViolation. Usually when a @Validated validation fails.
+     *
+     * @param cv the ConstraintViolation
+     */
+    private void addValidationError(ConstraintViolation<?> cv) {
+        this.addValidationError(
+                cv.getRootBeanClass().getSimpleName(),
+                ((PathImpl) cv.getPropertyPath()).getLeafNode().asString(),
+                cv.getInvalidValue(),
+                cv.getMessage());
+    }
+
+    void addValidationErrors(Set<ConstraintViolation<?>> constraintViolations) {
+        constraintViolations.forEach(this::addValidationError);
     }
 }
 
