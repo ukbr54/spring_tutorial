@@ -16,6 +16,9 @@ public class BirdController {
     @Autowired
     private BirdService birdService;
 
+    @Autowired
+    private BirdMapper birdMapper;
+
 
     /**
      * {
@@ -30,8 +33,9 @@ public class BirdController {
      * @throws EntityNotFoundException
      */
     @GetMapping(value = "/{birdId}")
-    public Bird getBird(@PathVariable("birdId") Long birdId) throws EntityNotFoundException {
-        return birdService.getBird(birdId);
+    public BirdDTO getBird(@PathVariable("birdId") Long birdId) throws EntityNotFoundException {
+        Bird bird = birdService.getBird(birdId);
+        return birdMapper.birdToBirdDTO(bird);
     }
 
 
