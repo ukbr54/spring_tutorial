@@ -19,6 +19,7 @@
     <modules>
         <module>security</module>
         <module>exception_handling</module>
+        <module>reactive-web-api</module>
     </modules>
 
     <parent>
