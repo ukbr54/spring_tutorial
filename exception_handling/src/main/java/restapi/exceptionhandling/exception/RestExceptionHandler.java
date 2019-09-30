@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,12 +22,34 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import javax.validation.ConstraintViolationException;
+import java.util.stream.Collectors;
 
 
 @Slf4j
 @ControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class RestExceptionHandler  extends ResponseEntityExceptionHandler {
+
+
+    /**
+     *   Handle HttpRequestMethodNotSupportedException. Triggered when the required http method is not supported
+     *
+     * @param ex    HttpRequestMethodNotSupportedException
+     * @param headers HttpHeaders
+     * @param status  HttpStatus
+     * @param request WebRequest
+     * @return
+     */
+    @Override
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex,
+                                                                         HttpHeaders headers, HttpStatus status, WebRequest request) {
+        ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
+        apiError.setMessage(ex.getMessage());
+        apiError.setDebugMessage(String.format(
+                "%s method is not supported for this request. Supported methods are %s",ex.getMethod(),
+                ex.getSupportedHttpMethods().stream().map(h -> h.name()).collect(Collectors.joining(","))));
+        return buildResponseEntity(apiError);
+    }
 
     /**
      * Handle MissingServletRequestParameterException. Triggered when a 'required' request parameter is missing.
