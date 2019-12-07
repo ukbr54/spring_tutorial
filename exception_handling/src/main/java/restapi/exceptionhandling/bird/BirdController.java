@@ -3,10 +3,13 @@ package restapi.exceptionhandling.bird;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import restapi.exceptionhandling.exception.EntityNotFoundException;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -76,5 +79,11 @@ public class BirdController {
     @PostMapping
     public Bird createBird(@RequestBody @Valid Bird bird) {
         return birdService.createBird(bird);
+    }
+
+    @GetMapping("/multiple-value")
+    public ResponseEntity multipleValue(@RequestParam Map<String,String> request){
+        System.out.println(request);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
