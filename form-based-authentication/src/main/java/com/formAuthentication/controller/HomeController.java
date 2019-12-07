@@ -15,8 +15,8 @@ public class HomeController {
         return "index";
     }
 
-    @GetMapping("logout")
-    public String logout(){
-        return "index";
+    @GetMapping("login")
+    public String login(){
+        return "login";
     }
 }

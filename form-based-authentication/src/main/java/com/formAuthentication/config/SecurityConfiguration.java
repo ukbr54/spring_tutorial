@@ -38,11 +38,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
            .authorizeRequests()
-              .antMatchers("/index.html").permitAll()
+              .antMatchers("/index.html","/login/**").permitAll()
               .antMatchers("/profile/**").authenticated()
               .antMatchers("/admin/**").hasRole("ADMIN")
               .antMatchers("/management/**").hasAnyRole("ADMIN","MANAGER")
            .and()
-              .httpBasic();
+              .formLogin()
+                .loginPage("/login")
+                .loginProcessingUrl("/perform_login")
+                .failureUrl("/login?error=true");
     }
 }
