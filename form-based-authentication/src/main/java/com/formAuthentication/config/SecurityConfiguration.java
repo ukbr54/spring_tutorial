@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Created by Ujjwal Gupta on Dec,2019
@@ -26,16 +27,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth
            .inMemoryAuthentication()
-                .withUser("admin").password(passwordEncoder().encode("admin")).roles("ADMIN")
-                .and()
-                .withUser("user").password(passwordEncoder().encode("user")).roles("USER");
+              .withUser("admin").password(passwordEncoder().encode("admin")).roles("ADMIN")
+           .and()
+              .withUser("user").password(passwordEncoder().encode("user")).roles("USER")
+           .and()
+              .withUser("manager").password(passwordEncoder().encode("manager123")).roles("MANAGER");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
            .authorizeRequests()
-              .anyRequest().authenticated()
+              .antMatchers("/index.html").permitAll()
+              .antMatchers("/profile/**").authenticated()
+              .antMatchers("/admin/**").hasRole("ADMIN")
+              .antMatchers("/management/**").hasAnyRole("ADMIN","MANAGER")
            .and()
               .httpBasic();
     }
