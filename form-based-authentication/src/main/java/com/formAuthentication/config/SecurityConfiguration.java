@@ -43,7 +43,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
               .antMatchers("/admin/**").hasRole("ADMIN")
               .antMatchers("/management/**").hasAnyRole("ADMIN","MANAGER")
            .and()
-              .formLogin()
+              .formLogin() 
                 .loginPage("/login")
                 .loginProcessingUrl("/perform_login")
                 .failureUrl("/login?error=true");
