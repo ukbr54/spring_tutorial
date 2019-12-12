@@ -1,9 +1,6 @@
 package com.formAuthentication.config;
 
-import com.formAuthentication.security.CustomAuthenticationFailureHandler;
-import com.formAuthentication.security.CustomAuthenticationSuccessHandler;
-import com.formAuthentication.security.CustomSuccessHandler;
-import com.formAuthentication.security.UserDetailsService;
+import com.formAuthentication.security.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Created by Ujjwal Gupta on Dec,2019
@@ -24,18 +22,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private UserDetailsService userDetailsService;
     private CustomSuccessHandler successHandler;
+    private CustomLogoutSuccessHandler logoutSuccessHandler;
     private CustomAuthenticationFailureHandler failureHandler;
+    private CustomAccessDeniedHandler accessDeniedHandler;
     private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
 
     @Autowired
     public SecurityConfiguration(UserDetailsService userDetailsService,
                                  CustomSuccessHandler successHandler,
                                  CustomAuthenticationFailureHandler failureHandler,
-                                 CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
+                                 CustomAuthenticationSuccessHandler authenticationSuccessHandler,
+                                 CustomLogoutSuccessHandler logoutSuccessHandler,
+                                 CustomAccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.authenticationSuccessHandler = authenticationSuccessHandler;
+        this.logoutSuccessHandler = logoutSuccessHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -66,7 +70,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .loginPage("/login")
                 .loginProcessingUrl("/perform_login")
                 .successHandler(authenticationSuccessHandler)
-                .failureHandler(failureHandler);
+                .failureHandler(failureHandler)
+           .and()
+              .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true)
+                .logoutSuccessHandler(logoutSuccessHandler)
+           .and()
+               .exceptionHandling()
+                .accessDeniedHandler(accessDeniedHandler);
     }
 
 
