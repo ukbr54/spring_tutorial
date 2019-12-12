@@ -1,5 +1,10 @@
 package com.formAuthentication.config;
 
+import com.formAuthentication.security.CustomAuthenticationFailureHandler;
+import com.formAuthentication.security.CustomAuthenticationSuccessHandler;
+import com.formAuthentication.security.CustomSuccessHandler;
+import com.formAuthentication.security.UserDetailsService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,6 +22,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    private UserDetailsService userDetailsService;
+    private CustomSuccessHandler successHandler;
+    private CustomAuthenticationFailureHandler failureHandler;
+    private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
+
+    @Autowired
+    public SecurityConfiguration(UserDetailsService userDetailsService,
+                                 CustomSuccessHandler successHandler,
+                                 CustomAuthenticationFailureHandler failureHandler,
+                                 CustomAuthenticationSuccessHandler authenticationSuccessHandler) {
+        this.userDetailsService = userDetailsService;
+        this.successHandler = successHandler;
+        this.failureHandler = failureHandler;
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -24,24 +45,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-           .inMemoryAuthentication()
-              .withUser("admin")
-                .password(passwordEncoder().encode("admin"))
-                .authorities("ACCESS_TEST1","ACCESS_TEST2","ROLE_ADMIN")
-           .and()
-              .withUser("user")
-                .password(passwordEncoder().encode("user"))
-                .roles("USER")
-           .and()
-              .withUser("manager")
-                .password(passwordEncoder().encode("manager123"))
-                .authorities("ACCESS_TEST1","ROLE_MANAGER");
+        auth.userDetailsService(userDetailsService);
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+           .csrf().disable() // We don't need CSRF for this exaxmple
            .authorizeRequests()
               .antMatchers("/","/login","h2-console/**","/api/all-users").permitAll()
               .antMatchers("/profile/**").authenticated()
@@ -55,6 +65,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
               .formLogin()
                 .loginPage("/login")
                 .loginProcessingUrl("/perform_login")
-                .failureUrl("/login?error=true");
+                .successHandler(authenticationSuccessHandler)
+                .failureHandler(failureHandler);
     }
+
+
+
+
+   /** @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth
+                .inMemoryAuthentication()
+                .withUser("admin")
+                .password(passwordEncoder().encode("admin"))
+                .authorities("ACCESS_TEST1","ACCESS_TEST2","ROLE_ADMIN")
+                .and()
+                .withUser("user")
+                .password(passwordEncoder().encode("user"))
+                .roles("USER")
+                .and()
+                .withUser("manager")
+                .password(passwordEncoder().encode("manager123"))
+                .authorities("ACCESS_TEST1","ROLE_MANAGER");
+    } **/
 }
