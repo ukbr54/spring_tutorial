@@ -43,12 +43,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
            .authorizeRequests()
-              .antMatchers("/","/login").permitAll()
+              .antMatchers("/","/login","h2-console/**").permitAll()
               .antMatchers("/profile/**").authenticated()
               .antMatchers("/admin/**").hasRole("ADMIN")
               .antMatchers("/management/**").hasAnyRole("ADMIN","MANAGER")
               .antMatchers("/api/test1").hasAuthority("ACCESS_TEST1")
               .antMatchers("/api/test2").hasAuthority("ACCESS_TEST2")
+           .and().csrf().ignoringAntMatchers("/h2-console/**")//don't apply CSRF protection to /h2-console
+           .and().headers().frameOptions().sameOrigin()//allow use of frame to same origin urls
            .and()
               .formLogin()
                 .loginPage("/login")
