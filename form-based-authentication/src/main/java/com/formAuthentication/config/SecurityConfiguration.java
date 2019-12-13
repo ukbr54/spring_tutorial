@@ -4,12 +4,15 @@ import com.formAuthentication.security.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -47,9 +50,27 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public AuthenticationProcessingFilter authenticationProcessingFilter() throws Exception {
+        AuthenticationProcessingFilter authenticationFilter = new AuthenticationProcessingFilter();
+        authenticationFilter.setFilterProcessesUrl("/perform_login");
+        authenticationFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        authenticationFilter.setAuthenticationFailureHandler(failureHandler);
+        authenticationFilter.setAuthenticationManager(authenticationManagerBean());
+        return authenticationFilter;
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService);
+        auth.authenticationProvider(authProvider());
     }
 
     @Override
@@ -65,12 +86,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
               .antMatchers("/api/test2").hasAuthority("ACCESS_TEST2")
            .and().csrf().ignoringAntMatchers("/h2-console/**")//don't apply CSRF protection to /h2-console
            .and().headers().frameOptions().sameOrigin()//allow use of frame to same origin urls
-           .and()
-              .formLogin()
-                .loginPage("/login")
-                .loginProcessingUrl("/perform_login")
+           .and().addFilterBefore(authenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
+           .formLogin()
+              .loginPage("/login")
+                /**.loginProcessingUrl("/perform_login")
                 .successHandler(authenticationSuccessHandler)
-                .failureHandler(failureHandler)
+                .failureHandler(failureHandler)**/
            .and()
               .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
