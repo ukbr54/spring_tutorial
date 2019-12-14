@@ -34,6 +34,8 @@ public class AuthenticationProcessingFilter extends UsernamePasswordAuthenticati
 
         final Authentication auth = new UsernamePasswordAuthenticationToken(username,password);
 
-        return getAuthenticationManager().authenticate(auth);
+        Authentication authenticate = getAuthenticationManager().authenticate(auth);
+
+        return authenticate;
     }
 }
