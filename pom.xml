@@ -22,8 +22,8 @@
         <module>exception_handling</module>
         <module>reactive-web-api</module>
         <module>form-based-authentication</module>
-        <module>oAuth2.0-security</module>
         <module>batch-processing</module>
+        <module>spring-core</module>
     </modules>
 
     <parent>
